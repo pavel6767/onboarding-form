@@ -14,6 +14,12 @@ const STEPS = [
       type: "text",
     },
     {
+      name: "country",
+      label: "Country",
+      type: "text",
+      required: true,
+    },
+    {
       name: "bio",
       label: "Bio",
       type: "multiline-text",
@@ -21,23 +27,17 @@ const STEPS = [
   ],
   [
     {
-      name: "country",
-      label: "Country",
-      type: "text",
-      required: true,
-    },
-    {
       name: "receiveNotifications",
       label:
         "I would like to receive email notifications for new messages when I'm logged out",
       type: "yes-no",
-      required: true,
+      required: false,
     },
     {
       name: "receiveUpdates",
       label: "I would like to receive updates about the product via email",
       type: "yes-no",
-      required: true,
+      required: false,
     },
   ],
 ];
