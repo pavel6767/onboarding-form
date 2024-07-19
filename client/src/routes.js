@@ -17,6 +17,7 @@ const AppRoutes = (props) => {
   const login = async (credentials) => {
     try {
       const { data } = await axios.post("/auth/login", credentials);
+      await localStorage.setItem("username", data.username);
       await localStorage.setItem("messenger-token", data.token);
       setUser(data);
     } catch (error) {

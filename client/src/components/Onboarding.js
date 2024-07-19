@@ -14,22 +14,24 @@ import TextInput from "./Inputs/TextInput";
 const Onboarding = () => {
   const navigate = useNavigate();
 
-  const [onboardingForm, setOnboardingForm] = useState({ isFetching: true, steps: [] });
+  const [onboardingForm, setOnboardingForm] = useState({ isLoading: true, steps: [] });
   const [onboardingData, setOnboardingData] = useState({});
   const [currentFormPage, setCurrentFormPage] = useState(0);
   const [validity, setValidity] = useState({ current: false, all: false })
   const [displayWarning, setDisplayWarning] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
+    setOnboardingData({})
     const fetchOnboardingFormData = async () => {
-      setOnboardingForm((prev) => ({ ...prev, isFetching: true }));
+      setOnboardingForm((prev) => ({ ...prev, isLoading: true }));
       try {
         const { data } = await axios.get("/api/onboarding");
         setOnboardingForm(data);
       } catch (error) {
         console.error(error);
       } finally {
-        setOnboardingForm((prev) => ({ ...prev, isFetching: false }));
+        setOnboardingForm((prev) => ({ ...prev, isLoading: false }));
       }
     };
 
@@ -57,8 +59,29 @@ const Onboarding = () => {
     isCurrentPageValid(newState)
   };
 
-  const saveOnboarding = () => {
-    navigate("/home", { state: { onboarding: true } });
+  const prepReqBody = () =>
+    onboardingForm.steps
+      .map(step =>
+        step.map(q => ({
+          name: q.name,
+          value: q.type.includes('text') ? onboardingData[q.name] : !!onboardingData[q.name]
+        })))
+
+  const saveOnboarding = async () => {
+    setSubmitting(true)
+    const steps = prepReqBody()
+    try {
+      const username = await localStorage.getItem("username");
+
+      const response = await axios.post("/api/onboarding",
+        { steps, username },
+        { headers: {username} });
+      navigate("/home", { state: { onboarding: true } });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitting(false)
+    }
   };
 
   const isCurrentPageValid = (state) => {
@@ -97,6 +120,7 @@ const Onboarding = () => {
             bgcolor: '#3A8DFF',
           },
         }}
+        key={text}
         type="submit"
         variant="contained"
         size="large"
@@ -126,11 +150,11 @@ const Onboarding = () => {
 
   const navButtons = [
     { label: "Back", options: { hide: currentFormPage === 0, onClick: handlePageMove.back } },
-    { label: "Finish", options: { hide: currentFormPage !== onboardingForm.steps.length - 1, onClick: saveOnboarding, disabled: !validity.all } },
+    { label: submitting ? "Sending" : "Finish", options: { hide: currentFormPage !== onboardingForm.steps.length - 1, onClick: saveOnboarding, disabled: !validity.all || submitting } },
     { label: "Next", options: { hide: currentFormPage === onboardingForm.steps.length - 1, onClick: handlePageMove.next, disabled: !validity.current } },
   ]
 
-  if (onboardingForm.isFetching) return <div>Loading...</div>;
+  if (onboardingForm.isLoading) return <div>Loading...</div>;
 
   return (
     <Grid container justifyContent="center">

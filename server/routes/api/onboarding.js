@@ -1,5 +1,7 @@
 const router = require("express").Router();
 
+const { User } = require("../../db/models");
+
 const STEPS = [
   [
     {
@@ -43,7 +45,7 @@ const STEPS = [
 ];
 
 const methodNotAllowed = (req, res, next) => {
-  return res.header("Allow", "GET").sendStatus(405);
+  return res.header("Allow", "GET,POST").sendStatus(405);
 };
 
 const getOnboarding = async (req, res, next) => {
@@ -56,7 +58,47 @@ const getOnboarding = async (req, res, next) => {
     next(error);
   }
 };
+const postOnboarding = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
 
-router.route("/").get(getOnboarding).all(methodNotAllowed);
+    const inputBody = req.body.steps.reduce((acc, current) => {
+      current.forEach(q => {
+        acc[q.name] = q.value
+      })
+      return acc
+    }, {})
+    
+    const [_, updatedUser] = await User.update(inputBody, {
+      where: {
+        username: req.body.username,
+      },
+      returning: true,
+    })
+    
+    if (updatedUser === 0 ) {
+      res.status(404).send('User not found')
+    } else {
+      const user = await User.findOne({
+        attributes: {
+          exclude: ['password', 'salt']
+        },
+        where: {
+          username: req.headers.username,
+        },
+        raw: true
+      });
+      return res.status(201).json(user);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+router.route("/").get(getOnboarding);
+router.route("/").post(postOnboarding);
+router.all("/",methodNotAllowed);
 
 module.exports = router;
