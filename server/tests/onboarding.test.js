@@ -35,12 +35,6 @@ describe("GET /api/onboarding", () => {
             type: "text",
           },
           {
-            name: "country",
-            label: "Country",
-            type: "text",
-            required: true,
-          },
-          {
             name: "bio",
             label: "Bio",
             type: "multiline-text",
@@ -48,32 +42,37 @@ describe("GET /api/onboarding", () => {
         ],
         [
           {
+            name: "country",
+            label: "Country",
+            type: "text",
+            required: true,
+          },
+          {
             name: "receiveNotifications",
             label:
               "I would like to receive email notifications for new messages when I'm logged out",
             type: "yes-no",
-            required: false,
+            required: true,
           },
           {
             name: "receiveUpdates",
             label:
               "I would like to receive updates about the product via email",
             type: "yes-no",
-            required: false,
+            required: true,
           },
         ],
       ],
     });
   });
 });
-// TODO, need to register a User in order for the below to be successful
+
 describe("POST /api/onboarding", () => {
   it.skip("should allow onboarding form request from thomas.", async () => {
     const token = makeToken(1);
     const res = await request(app)
       .post("/api/onboarding")
       .set("x-access-token", token)
-      .set("username", "thomasS")
       .send({
         steps: [
           [
@@ -101,14 +100,13 @@ describe("POST /api/onboarding", () => {
             },
             {
               name: "receiveUpdates",
-              value: true,
+              value: false,
             },
           ],
         ],
       });
 
     expect(res.status).toEqual(200);
-    console.log(':P::', { body: res.body });
     expect(res.body.firstName).toEqual("Thomas");
     expect(res.body.lastName).toEqual("Smith");
     expect(res.body.country).toEqual("Canada");
