@@ -68,7 +68,7 @@ describe("GET /api/onboarding", () => {
 });
 
 describe("POST /api/onboarding", () => {
-  it.skip("should allow onboarding form request from thomas.", async () => {
+  it("should allow onboarding form request from thomas.", async () => {
     const token = makeToken(1);
     const res = await request(app)
       .post("/api/onboarding")
@@ -100,7 +100,7 @@ describe("POST /api/onboarding", () => {
             },
             {
               name: "receiveUpdates",
-              value: false,
+              value: true,
             },
           ],
         ],
