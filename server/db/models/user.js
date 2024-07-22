@@ -49,9 +49,11 @@ const User = db.define("user", {
   },
   receiveNotifications: {
     type: Sequelize.BOOLEAN,
+    defaultValue: false
   },
   receiveUpdates: {
     type: Sequelize.BOOLEAN,
+    defaultValue: false
   },
   completedOnboarding: {
     type: Sequelize.BOOLEAN,
